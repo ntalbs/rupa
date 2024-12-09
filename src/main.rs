@@ -1,10 +1,7 @@
 use actix_files::NamedFile;
 use actix_web::{
-    body::BoxBody,
-    http::{Method, StatusCode},
-    route,
-    web::Data,
-    App, HttpRequest, HttpResponse, HttpServer, Responder,
+    body::BoxBody, http::StatusCode, route, web::Data, App, HttpRequest, HttpResponse, HttpServer,
+    Responder,
 };
 use clap::Parser;
 use env_logger::Env;
@@ -96,24 +93,8 @@ fn dir(base: &PathBuf, path: &PathBuf) -> io::Result<Vec<u8>> {
     Ok(buf)
 }
 
-#[route(
-    "/{_:.*}",
-    method = "GET",
-    method = "POST",
-    method = "PUT",
-    method = "DELETE",
-    method = "HEAD",
-    method = "CONNECT",
-    method = "OPTIONS",
-    method = "TRACE",
-    method = "PATCH"
-)]
-async fn get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
-    if req.method() != Method::GET {
-        return HttpResponse::new(StatusCode::METHOD_NOT_ALLOWED)
-            .set_body(BoxBody::new("Method Not Allowed"));
-    }
-
+#[route("/{_:.*}", method = "GET")]
+async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     let base = data.get_ref();
     let mut actual_path = base.clone();
 
@@ -143,6 +124,21 @@ async fn get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     }
 }
 
+#[route(
+    "/{_:.*}",
+    method = "POST",
+    method = "PUT",
+    method = "DELETE",
+    method = "HEAD",
+    method = "CONNECT",
+    method = "OPTIONS",
+    method = "TRACE",
+    method = "PATCH"
+)]
+async fn handle_other(_: HttpRequest) -> impl Responder {
+    HttpResponse::new(StatusCode::METHOD_NOT_ALLOWED).set_body(BoxBody::new("Method Not Allowed"))
+}
+
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
@@ -150,13 +146,18 @@ async fn main() -> std::io::Result<()> {
     let args = Arguments::parse();
     let port = args.port;
     let workers = args.workers;
-
-    info!("Starting server on port {port}");
     let base = args.base.canonicalize()?;
 
-    HttpServer::new(move || App::new().app_data(Data::new(base.clone())).service(get))
-        .bind(("0.0.0.0", port))?
-        .workers(workers)
-        .run()
-        .await
+    info!("Starting server on port {port}");
+
+    HttpServer::new(move || {
+        App::new()
+            .app_data(Data::new(base.clone()))
+            .service(handle_get)
+            .service(handle_other)
+    })
+    .bind(("0.0.0.0", port))?
+    .workers(workers)
+    .run()
+    .await
 }
