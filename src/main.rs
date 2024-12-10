@@ -103,20 +103,28 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     }
 
     if !actual_path.exists() {
+        info!("{} => {}", req.path(), actual_path.to_string_lossy());
         return HttpResponse::NotFound().body("Requested path does not exist.\n");
     }
 
     if actual_path.is_dir() {
         let index = actual_path.join("index.html");
         if index.exists() {
+            info!("{} => {}", req.path(), index.to_string_lossy());
             let index = NamedFile::open_async(index).await.unwrap();
             index.into_response(&req)
         } else {
+            info!(
+                "{} => Listing {}",
+                req.path(),
+                actual_path.to_string_lossy()
+            );
             HttpResponse::Ok()
                 .insert_header(("Content-Type", "text/html"))
                 .body(dir(base, &actual_path).unwrap())
         }
     } else {
+        info!("{} => {}", req.path(), actual_path.to_string_lossy());
         let file = actix_files::NamedFile::open_async(actual_path)
             .await
             .unwrap();
