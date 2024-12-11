@@ -144,7 +144,7 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     method = "PATCH"
 )]
 async fn handle_other(_: HttpRequest) -> impl Responder {
-    HttpResponse::new(StatusCode::METHOD_NOT_ALLOWED).set_body(BoxBody::new("Method Not Allowed"))
+    HttpResponse::new(StatusCode::METHOD_NOT_ALLOWED).set_body(BoxBody::new("Method Not Allowed.\n"))
 }
 
 #[actix_web::main]
