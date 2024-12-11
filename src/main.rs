@@ -104,14 +104,22 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     }
 
     if !actual_path.exists() {
-        info!("{} => {}, path does not exist", req.path().purple(), actual_path.to_string_lossy().red());
+        info!(
+            "{} => {}, path does not exist",
+            req.path().purple(),
+            actual_path.to_string_lossy().red()
+        );
         return HttpResponse::NotFound().body("Requested path does not exist.\n");
     }
 
     if actual_path.is_dir() {
         let index = actual_path.join("index.html");
         if index.exists() {
-            info!("{} => {}", req.path().purple(), index.to_string_lossy().blue());
+            info!(
+                "{} => {}",
+                req.path().purple(),
+                index.to_string_lossy().blue()
+            );
             let index = NamedFile::open_async(index).await.unwrap();
             index.into_response(&req)
         } else {
@@ -125,7 +133,11 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
                 .body(dir(base, &actual_path).unwrap())
         }
     } else {
-        info!("{} => {}", req.path().purple(), actual_path.to_string_lossy().blue());
+        info!(
+            "{} => {}",
+            req.path().purple(),
+            actual_path.to_string_lossy().blue()
+        );
         let file = actix_files::NamedFile::open_async(actual_path)
             .await
             .unwrap();
@@ -145,7 +157,8 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     method = "PATCH"
 )]
 async fn handle_other(_: HttpRequest) -> impl Responder {
-    HttpResponse::new(StatusCode::METHOD_NOT_ALLOWED).set_body(BoxBody::new("Method Not Allowed.\n"))
+    HttpResponse::new(StatusCode::METHOD_NOT_ALLOWED)
+        .set_body(BoxBody::new("Method Not Allowed.\n"))
 }
 
 #[actix_web::main]
@@ -168,8 +181,16 @@ async fn main() -> std::io::Result<()> {
     let workers = args.workers;
     let base = args.base.canonicalize()?;
 
-    info!("{} version: {}", env!("CARGO_PKG_NAME").yellow().bold(), env!("CARGO_PKG_VERSION").green());
-    info!("{} on {}", "Starting server".yellow(), format!("http://localhost:{port}").green());
+    info!(
+        "{} version: {}",
+        env!("CARGO_PKG_NAME").yellow().bold(),
+        env!("CARGO_PKG_VERSION").green()
+    );
+    info!(
+        "{} on {}",
+        "Starting server".yellow(),
+        format!("http://localhost:{port}").green()
+    );
     info!("{} {}", "Serving".yellow(), base.to_string_lossy().green());
     info!("Hit Ctrl+C to exit");
 
