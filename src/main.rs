@@ -4,6 +4,7 @@ use actix_web::{
     Responder,
 };
 use clap::Parser;
+use colored::Colorize;
 use env_logger::Env;
 use log::info;
 use std::{
@@ -103,28 +104,28 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     }
 
     if !actual_path.exists() {
-        info!("{} => {}", req.path(), actual_path.to_string_lossy());
+        info!("{} => {}, path does not exist", req.path().purple(), actual_path.to_string_lossy().red());
         return HttpResponse::NotFound().body("Requested path does not exist.\n");
     }
 
     if actual_path.is_dir() {
         let index = actual_path.join("index.html");
         if index.exists() {
-            info!("{} => {}", req.path(), index.to_string_lossy());
+            info!("{} => {}", req.path().purple(), index.to_string_lossy().blue());
             let index = NamedFile::open_async(index).await.unwrap();
             index.into_response(&req)
         } else {
             info!(
                 "{} => Listing {}",
-                req.path(),
-                actual_path.to_string_lossy()
+                req.path().purple(),
+                actual_path.to_string_lossy().blue()
             );
             HttpResponse::Ok()
                 .insert_header(("Content-Type", "text/html"))
                 .body(dir(base, &actual_path).unwrap())
         }
     } else {
-        info!("{} => {}", req.path(), actual_path.to_string_lossy());
+        info!("{} => {}", req.path().purple(), actual_path.to_string_lossy().blue());
         let file = actix_files::NamedFile::open_async(actual_path)
             .await
             .unwrap();
@@ -167,7 +168,10 @@ async fn main() -> std::io::Result<()> {
     let workers = args.workers;
     let base = args.base.canonicalize()?;
 
-    info!("Starting server on port {port}");
+    info!("{} version: {}", env!("CARGO_PKG_NAME").yellow().bold(), env!("CARGO_PKG_VERSION").green());
+    info!("{} on {}", "Starting server".yellow(), format!("http://localhost:{port}").green());
+    info!("{} {}", "Serving".yellow(), base.to_string_lossy().green());
+    info!("Hit Ctrl+C to exit");
 
     HttpServer::new(move || {
         App::new()
