@@ -16,11 +16,11 @@ use std::{
 #[derive(Default, Debug, Parser)]
 #[clap(version, about = "A simple command-line static http server")]
 struct Arguments {
-    #[clap(short, long, default_value_t = 3000)]
+    #[clap(short, long, default_value_t = 3000, help = "Port to use")]
     port: u16,
-    #[clap(short, long, default_value = ".")]
+    #[clap(short('r'), long("root"), default_value = ".", help = "Base directory")]
     base: PathBuf,
-    #[clap(short, long, default_value_t = 1)]
+    #[clap(short, long, default_value_t = 1, help = "Worker count")]
     workers: usize,
 }
 
