@@ -192,7 +192,7 @@ async fn main() -> std::io::Result<()> {
         format!("http://localhost:{port}").green()
     );
     info!("{} {}", "Serving".yellow(), base.to_string_lossy().green());
-    info!("Hit Ctrl+C to exit");
+    info!("Hit {} to exit", "Ctrl+C".bold());
 
     HttpServer::new(move || {
         App::new()
