@@ -7,6 +7,7 @@ use clap::Parser;
 use colored::Colorize;
 use env_logger::Env;
 use log::info;
+use percent_encoding::percent_decode;
 use std::{
     fs,
     io::{self, Write},
@@ -100,7 +101,8 @@ async fn handle_get(req: HttpRequest, data: Data<PathBuf>) -> impl Responder {
     let mut actual_path = base.clone();
 
     if req.path() != "/" {
-        actual_path = actual_path.join(&req.path()[1..]);
+        let req_path = percent_decode(req.path().as_bytes()).decode_utf8_lossy();
+        actual_path = actual_path.join(&req_path[1..]);
     }
 
     if !actual_path.exists() {
