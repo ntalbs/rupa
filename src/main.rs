@@ -1,7 +1,7 @@
 use actix_files::NamedFile;
 use actix_web::{
-    body::BoxBody, http::StatusCode, route, web::Data, App, HttpRequest, HttpResponse, HttpServer,
-    Responder,
+    App, HttpRequest, HttpResponse, HttpServer, Responder, body::BoxBody, http::StatusCode, route,
+    web::Data,
 };
 use clap::Parser;
 use colored::Colorize;
