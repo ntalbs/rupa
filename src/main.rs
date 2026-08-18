@@ -66,7 +66,7 @@ fn dir(base: &PathBuf, path: &PathBuf) -> io::Result<Vec<u8>> {
         format!(
             "<html><head>{}</head><body><div class=\"path-header\">Path: {}</div><ol>",
             css(),
-            &path.to_str().unwrap()
+            path.to_str().unwrap()
         )
         .as_bytes(),
     )?;
