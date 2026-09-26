@@ -79,12 +79,10 @@ fn dir(base: &PathBuf, path: &PathBuf) -> io::Result<Vec<u8>> {
         if let (Ok(href), Some(name)) = (f.strip_prefix(base), f.file_name()) {
             let href = href.to_str().unwrap();
             let name = name.to_str().unwrap();
+            let dir_mark = if f.is_dir() { "/" } else { "" };
             buf.write_all(
                 format!(
-                    "<li><a href=\"/{}\">{}{}</li>",
-                    href,
-                    name,
-                    if f.is_dir() { "/" } else { "" }
+                    "<li><a href=\"/{href}{dir_mark}\">{name}{dir_mark}</li>",
                 )
                 .as_bytes(),
             )?;
